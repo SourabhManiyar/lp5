@@ -1,0 +1,46 @@
+#include <bits/stdc++.h>
+#include <iostream>
+#include <omp.h>
+
+using namespace std;
+
+void parallelReduction(int arr[], int n, int& minVal, int& maxVal, int& sum, double& avg) {
+    int localMin = arr[0];
+    int localMax = arr[0];
+    int localSum = 0;
+
+    #pragma omp parallel for reduction(min:localMin) reduction(max:localMax) reduction(+:localSum)
+    for (int i = 0; i < n; i++) {
+        localMin = min(localMin, arr[i]);
+        localMax = max(localMax, arr[i]);
+        localSum += arr[i];
+    }
+
+    minVal = localMin;
+    maxVal = localMax;
+    sum = localSum;
+    avg = static_cast<double>(localSum) / n;
+}
+
+int main() {
+    int arr[] = {5, 3, 8, 1, 4, 2, 7, 6};
+    int n = sizeof(arr) / sizeof(arr[0]);
+
+    int minVal, maxVal, sum;
+    double avg;
+
+    parallelReduction(arr, n, minVal, maxVal, sum, avg);
+
+    cout << "Array: ";
+    for (int i = 0; i < n; i++) {
+        cout << arr[i] << " ";
+    }
+    cout << endl;
+
+    cout << "Min: " << minVal << endl;
+    cout << "Max: " << maxVal << endl;
+    cout << "Sum: " << sum << endl;
+    cout << "Average: " << avg << endl;
+
+    return 0;
+}
